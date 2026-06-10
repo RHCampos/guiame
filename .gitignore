@@ -1,6 +1,13 @@
+# Variables de entorno — NUNCA subir al repo
+.env
 backend/.env
+**/.env
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
+
+# Backups
 *.tar.gz
 *.sql
