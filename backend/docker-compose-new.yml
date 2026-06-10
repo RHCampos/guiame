@@ -1,0 +1,36 @@
+services:
+  guiame-web:
+    image: nginx:alpine
+    container_name: guiame-web
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.guiame.rule=Host(`guiame.pro`)"
+      - "traefik.http.routers.guiame.entrypoints=websecure"
+      - "traefik.http.routers.guiame.tls=true"
+      - "traefik.http.routers.guiame.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.guiame.service=guiame"
+      - "traefik.http.services.guiame.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.guiame-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.guiame-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.guiame-http.rule=Host(`guiame.pro`)"
+      - "traefik.http.routers.guiame-http.entrypoints=web"
+      - "traefik.http.routers.guiame-http.middlewares=guiame-redirect"
+      - "traefik.http.routers.guiame-http.service=guiame"
+    networks:
+      - web
+
+  guiame-backend:
+    build: ./backend
+    container_name: guiame-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

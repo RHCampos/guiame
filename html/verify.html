@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuIAme — Verificar cuenta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #080b12; --card: #131929; --orange: #f97316;
+      --blue3: #60a5fa; --text: #f0f4ff; --text2: #94a3c0;
+      --green: #22c55e; --rose: #f87171;
+    }
+    body { background: var(--black); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: var(--card); border: 1px solid #1a2236; border-radius: 16px; padding: 48px 40px; max-width: 460px; width: 90%; text-align: center; }
+    .wordmark { font-family: Rajdhani, sans-serif; font-size: 28px; margin-bottom: 32px; }
+    .icon { font-size: 56px; margin-bottom: 16px; }
+    h2 { font-family: Rajdhani, sans-serif; font-size: 24px; margin-bottom: 12px; }
+    p { color: var(--text2); font-size: 15px; line-height: 1.6; }
+    .btn { display: inline-block; margin-top: 28px; padding: 12px 32px; background: var(--orange); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; }
+    .success h2 { color: var(--green); }
+    .error h2 { color: var(--rose); }
+    .loading h2 { color: var(--text2); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="wordmark">
+      <span style="color:#f97316">Gu</span><span style="color:#60a5fa">IA</span><span style="color:#f97316">me</span>
+    </div>
+    <div id="content" class="loading">
+      <div class="icon">⏳</div>
+      <h2>Verificando tu cuenta...</h2>
+      <p>Aguardá un momento.</p>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://api.guiame.pro/api';
+
+    async function verify() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        showError('Link inválido. No se encontró el token de verificación.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/auth/verify/${token}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          showSuccess();
+        } else {
+          showError(data.detail || 'No se pudo verificar la cuenta.');
+        }
+      } catch (e) {
+        showError('No se pudo conectar con el servidor. Intentá de nuevo.');
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById('content').className = 'success';
+      document.getElementById('content').innerHTML = `
+        <div class="icon">✅</div>
+        <h2>¡Cuenta verificada!</h2>
+        <p>Tu cuenta está activa. Ya podés iniciar sesión en GuIAme.</p>
+        <a href="/" class="btn">Ir al login</a>
+      `;
+    }
+
+    function showError(msg) {
+      document.getElementById('content').className = 'error';
+      document.getElementById('content').innerHTML = `
+        <div class="icon">❌</div>
+        <h2>No se pudo verificar</h2>
+        <p>${msg}</p>
+        <a href="/" class="btn" style="background:#1a2236;color:var(--text2);">Volver al inicio</a>
+      `;
+    }
+
+    verify();
+  </script>
+</body>
+</html>

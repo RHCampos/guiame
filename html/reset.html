@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuIAme — Restablecer contraseña</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#080b12;--card:#131929;--card2:#1a2236;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --orange:#f97316;--orange2:#ea580c;--orange3:#fb923c;
+  --blue:#2563eb;--blue3:#60a5fa;
+  --green:#22c55e;--rose:#f87171;
+  --text:#f0f4ff;--text2:#94a3c0;--text3:#4a5a78;
+  --sans:'DM Sans',sans-serif;--title:'Rajdhani',sans-serif;
+  --r:12px;--r2:18px;
+}
+html,body{min-height:100%;background:var(--black);color:var(--text);font-family:var(--sans);display:flex;align-items:center;justify-content:center;padding:24px}
+.circuit-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(37,99,235,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.03) 1px,transparent 1px);background-size:40px 40px}
+.circuit-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(37,99,235,0.08) 0%,transparent 70%)}
+.wrap{width:100%;max-width:420px;position:relative;z-index:1;animation:fadeUp 0.6s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* Logo */
+.logo{text-align:center;margin-bottom:32px}
+.wordmark{font-family:var(--title);font-size:30px;font-weight:700;letter-spacing:2px}
+.wm-gu,.wm-me{color:var(--orange)}
+.wm-ia{color:var(--blue3)}
+.tagline{font-size:12px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:6px}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r2);padding:32px;box-shadow:0 32px 64px rgba(0,0,0,0.6)}
+.card-title{font-family:var(--title);font-size:22px;font-weight:700;letter-spacing:0.5px;margin-bottom:6px}
+.card-sub{font-size:14px;color:var(--text2);font-weight:300;line-height:1.6;margin-bottom:24px}
+
+/* Fields */
+.field-group{margin-bottom:18px}
+.field-label{font-size:11px;font-weight:500;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;display:block}
+.field-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:14px;padding:12px 14px;outline:none;transition:all 0.2s}
+.field-input::placeholder{color:var(--text3)}
+.field-input:focus{border-color:var(--orange);background:rgba(249,115,22,0.05);box-shadow:0 0 0 3px rgba(249,115,22,0.1)}
+.field-input.error{border-color:var(--rose)!important;box-shadow:0 0 0 2px rgba(248,113,113,0.15)!important}
+.field-input.valid{border-color:var(--green)!important}
+.field-error{font-size:12px;color:var(--rose);margin-top:4px;min-height:16px;display:block;opacity:0;transition:opacity 0.2s}
+.field-error.visible{opacity:1}
+.field-hint{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+
+/* Button */
+.btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--orange2));color:white;font-family:var(--title);font-size:16px;font-weight:700;letter-spacing:1px;padding:14px;border-radius:var(--r);border:none;cursor:pointer;box-shadow:0 8px 24px rgba(249,115,22,0.3);transition:all 0.25s;margin-top:8px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,0.4)}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+/* Alert boxes */
+.alert{border-radius:var(--r);padding:14px 16px;font-size:13px;line-height:1.6;margin-bottom:20px;display:none}
+.alert.show{display:block}
+.alert-error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);color:#fca5a5}
+.alert-success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#86efac}
+
+/* Back link */
+.back-link{text-align:center;margin-top:20px;font-size:13px;color:var(--text3)}
+.back-link a{color:var(--orange3);text-decoration:none;font-weight:500}
+.back-link a:hover{text-decoration:underline}
+
+/* Loading spinner */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="circuit-bg"></div>
+
+<div class="wrap">
+  <div class="logo">
+    <div class="wordmark"><span class="wm-gu">Gu</span><span class="wm-ia">IA</span><span class="wm-me">me</span></div>
+    <div class="tagline">Asistente Inteligente de Ciberseguridad</div>
+  </div>
+
+  <!-- PASO 1: Solicitar reset (se muestra si no hay token en la URL) -->
+  <div id="step-request" class="card">
+    <div class="card-title">Recuperar contraseña</div>
+    <div class="card-sub">Ingresá tu email y te enviamos un link para crear una nueva contraseña.</div>
+
+    <div id="alert-request" class="alert"></div>
+
+    <div class="field-group">
+      <label class="field-label">Correo electrónico</label>
+      <input class="field-input" type="email" id="forgot-email" placeholder="usuario@ejemplo.com" oninput="clearAlert('request')">
+      <span class="field-error" id="error-forgot-email"></span>
+    </div>
+
+    <button class="btn" id="btn-request" onclick="requestReset()">ENVIAR LINK DE RECUPERACIÓN</button>
+
+    <div class="back-link">
+      <a href="/">← Volver al inicio de sesión</a>
+    </div>
+  </div>
+
+  <!-- PASO 2: Nueva contraseña (se muestra si hay token en la URL) -->
+  <div id="step-reset" class="card" style="display:none">
+    <div class="card-title">Nueva contraseña</div>
+    <div class="card-sub">Elegí una contraseña segura de al menos 12 caracteres.</div>
+
+    <div id="alert-reset" class="alert"></div>
+
+    <div class="field-group">
+      <label class="field-label">Nueva contraseña</label>
+      <input class="field-input" type="password" id="new-pass" placeholder="Mínimo 12 caracteres" oninput="validateNewPass()">
+      <span class="field-error" id="error-new-pass"></span>
+      <div class="field-hint">Usá una frase larga o combinación de letras, números y símbolos.</div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Confirmar contraseña</label>
+      <input class="field-input" type="password" id="new-pass2" placeholder="Repetí la contraseña" oninput="validateNewPass2()">
+      <span class="field-error" id="error-new-pass2"></span>
+    </div>
+
+    <button class="btn" id="btn-reset" onclick="doReset()">RESTABLECER CONTRASEÑA</button>
+
+    <div class="back-link">
+      <a href="/">← Volver al inicio de sesión</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.guiame.pro/api';
+
+// Detectar si hay token en la URL
+const urlParams = new URLSearchParams(window.location.search);
+const resetToken = urlParams.get('token');
+
+if (resetToken) {
+  document.getElementById('step-request').style.display = 'none';
+  document.getElementById('step-reset').style.display = 'block';
+}
+
+// ── Solicitar reset ──
+async function requestReset() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const errorEl = document.getElementById('error-forgot-email');
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email || !regex.test(email)) {
+    document.getElementById('forgot-email').classList.add('error');
+    errorEl.textContent = 'Ingresá un email válido';
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  errorEl.classList.remove('visible');
+  document.getElementById('forgot-email').classList.remove('error');
+
+  const btn = document.getElementById('btn-request');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando...';
+
+  try {
+    const res = await fetch(`${API}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    showAlert('request', 'success', data.message || 'Revisá tu email, te enviamos el link de recuperación.');
+    btn.disabled = true;
+    btn.textContent = 'EMAIL ENVIADO ✓';
+  } catch(e) {
+    showAlert('request', 'error', 'No se pudo conectar con el servidor. Intentá de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'ENVIAR LINK DE RECUPERACIÓN';
+  }
+}
+
+// ── Validaciones reset ──
+function validateNewPass() {
+  const input = document.getElementById('new-pass');
+  const error = document.getElementById('error-new-pass');
+  const val = input.value;
+  if (val === '') { input.classList.remove('error','valid'); error.classList.remove('visible'); return true; }
+  if (val.length < 12) {
+    input.classList.add('error'); input.classList.remove('valid');
+    error.textContent = 'El mínimo es 12 caracteres';
+    error.classList.add('visible'); return false;
+  }
+  input.classList.remove('error'); input.classList.add('valid');
+  error.classList.remove('visible');
+  validateNewPass2();
+  return true;
+}
+
+function validateNewPass2() {
+  const input = document.getElementById('new-pass2');
+  const error = document.getElementById('error-new-pass2');
+  const val = input.value;
+  const pass = document.getElementById('new-pass').value;
+  if (val === '') { input.classList.remove('error','valid'); error.classList.remove('visible'); return true; }
+  if (val !== pass) {
+    input.classList.add('error'); input.classList.remove('valid');
+    error.textContent = 'Las contraseñas no coinciden';
+    error.classList.add('visible'); return false;
+  }
+  input.classList.remove('error'); input.classList.add('valid');
+  error.classList.remove('visible'); return true;
+}
+
+// ── Hacer reset ──
+async function doReset() {
+  if (!validateNewPass() || !validateNewPass2()) return;
+  const pass = document.getElementById('new-pass').value;
+  const pass2 = document.getElementById('new-pass2').value;
+  if (pass !== pass2) return;
+
+  const btn = document.getElementById('btn-reset');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+  try {
+    const res = await fetch(`${API}/auth/reset-password`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token: resetToken, new_password: pass})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showAlert('reset', 'error', data.detail || 'Error al restablecer la contraseña.');
+      btn.disabled = false;
+      btn.textContent = 'RESTABLECER CONTRASEÑA';
+      return;
+    }
+    showAlert('reset', 'success', '¡Contraseña restablecida! Redirigiendo al inicio de sesión...');
+    btn.textContent = 'CONTRASEÑA CAMBIADA ✓';
+    setTimeout(() => { window.location.href = '/'; }, 2500);
+  } catch(e) {
+    showAlert('reset', 'error', 'No se pudo conectar con el servidor. Intentá de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'RESTABLECER CONTRASEÑA';
+  }
+}
+
+function showAlert(step, type, msg) {
+  const el = document.getElementById(`alert-${step}`);
+  el.className = `alert alert-${type} show`;
+  el.textContent = msg;
+}
+
+function clearAlert(step) {
+  const el = document.getElementById(`alert-${step}`);
+  el.classList.remove('show');
+}
+
+// Enter key
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (!resetToken) requestReset();
+  else doReset();
+});
+</script>
+</body>
+</html>

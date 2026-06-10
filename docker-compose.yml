@@ -1,0 +1,22 @@
+services:
+  guiame-web:
+    image: nginx:alpine
+    container_name: guiame-web
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - web
+
+  guiame-backend:
+    build: ./backend
+    container_name: guiame-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

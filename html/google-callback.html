@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Autenticando...</title>
+<style>body{background:#080b12;color:#f0f4ff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-size:15px;}</style>
+</head>
+<body>
+<p>Autenticando con Google...</p>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code  = params.get('code');
+  const error = params.get('error');
+  if(code){
+    window.opener && window.opener.postMessage(
+      { type: 'google-oauth-code', code: code },
+      'https://guiame.pro'
+    );
+  } else {
+    window.opener && window.opener.postMessage(
+      { type: 'google-oauth-error', error: error || 'cancelled' },
+      'https://guiame.pro'
+    );
+  }
+  window.close();
+</script>
+</body>
+</html>
