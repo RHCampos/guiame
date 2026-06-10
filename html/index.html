@@ -711,6 +711,10 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
 <script>
 // ── NAVIGATION ──
 function showPage(name){
+  // Si intenta ir a resultado sin análisis activo, redirigir a análisis
+  if(name==='result' && !lastAnalysisResult){
+    name='analysis';
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   const nav = document.getElementById('main-nav');
@@ -916,17 +920,40 @@ async function loadDashboard(){
 function renderDashboardHistory(items){
   const container = document.querySelector('.activity-list');
   if(!container || !items.length) return;
-  const icons = {danger:'🚨', warn:'⚠️', safe:'✅'};
-  const labels = {danger:'Phishing', warn:'Sospechoso', safe:'Seguro'};
-  const colors = {danger:'var(--rose)', warn:'var(--amber)', safe:'var(--green)'};
+  const levelIcon = {danger:'🔴', warn:'🟡', safe:'🟢'};
+  const levelLabel = {danger:'PELIGROSO', warn:'SOSPECHOSO', safe:'SEGURO'};
+  const levelColor = {danger:'var(--rose)', warn:'var(--amber)', safe:'var(--green)'};
+  const typeIcon = (preview) => {
+    if(preview.startsWith('Archivo')) return '📎';
+    if(preview.startsWith('http')) return '🔗';
+    return '💬';
+  };
+  const typeLabel = (h) => {
+    if(h.content_preview.startsWith('Archivo')) return 'Archivo';
+    if(h.input_type === 'url' || h.content_preview.startsWith('http')) return 'Enlace';
+    return 'Mensaje';
+  };
+  const timeAgo = (dateStr) => {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+    if(diff < 1) return 'hace un momento';
+    if(diff < 60) return `hace ${diff} min`;
+    if(diff < 1440) return `hace ${Math.floor(diff/60)}h`;
+    return `hace ${Math.floor(diff/1440)} días`;
+  };
   container.innerHTML = items.map(h=>`
-    <div class="activity-item">
-      <div class="act-icon" style="background:${colors[h.level]}22">${icons[h.level]}</div>
-      <div class="act-info">
-        <div class="act-msg">${h.content_preview}</div>
-        <div class="act-meta">${h.channel} · Riesgo: ${h.score}/100</div>
+    <div class="hist-item">
+      <div class="hist-text">
+        <div class="hist-msg">
+          <span style="margin-right:6px">${typeIcon(h.content_preview)}</span>
+          <strong style="color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">${typeLabel(h)}</strong>
+          <span style="margin:0 6px;color:var(--text3)">·</span>
+          <span style="color:var(--text)">${h.content_preview}</span>
+        </div>
+        <div class="hist-meta">${timeAgo(h.created_at)} · ${h.channel}</div>
       </div>
-      <span class="act-badge" style="color:${colors[h.level]}">${labels[h.level]}</span>
+      <span class="hist-badge" style="background:${levelColor[h.level]}22;color:${levelColor[h.level]};padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap">
+        ${levelIcon[h.level]} ${levelLabel[h.level]}
+      </span>
     </div>
   `).join('');
 }

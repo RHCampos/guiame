@@ -57,7 +57,16 @@ async def analyze(
     result = await run_analysis(content_to_analyze, data.channel, data.input_type)
 
     # Preparar datos para guardar
-    content_preview = data.content[:100]
+    # Generar preview limpio según tipo
+    if data.input_type == "file":
+        ext = data.filename.split(".")[-1].upper() if "." in data.filename else "Archivo"
+        content_preview = f"Archivo {ext}: {data.filename[:50]}" if data.filename else "Archivo adjunto"
+    elif data.input_type == "url":
+        content_preview = data.content[:80]
+    else:
+        # Mensaje: limpiar y truncar
+        clean = data.content.replace("\n", " ").replace("\r", " ").strip()
+        content_preview = clean[:80]
     content_hash = hashlib.sha256(data.content.encode()).hexdigest()
     signals_json = json.dumps(result["heuristic_hits"], ensure_ascii=False)
     recs_json = json.dumps(result["llm_recommendations"], ensure_ascii=False)
