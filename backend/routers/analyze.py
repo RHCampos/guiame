@@ -13,6 +13,7 @@ from ..models.schemas import (
     HistoryItem, FeedbackRequest
 )
 from ..agent.graph import run_analysis
+from ..agent.file_extractor import extract_text_from_file
 from ..config import settings
 
 router = APIRouter(tags=["analysis"])
@@ -46,8 +47,14 @@ async def analyze(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Extraer texto si es archivo
+    content_to_analyze = data.content
+    if data.input_type == "file":
+        filename = data.filename if hasattr(data, "filename") else ""
+        content_to_analyze = extract_text_from_file(data.content, filename)
+
     # Ejecutar el agente LangGraph
-    result = await run_analysis(data.content, data.channel, data.input_type)
+    result = await run_analysis(content_to_analyze, data.channel, data.input_type)
 
     # Preparar datos para guardar
     content_preview = data.content[:100]

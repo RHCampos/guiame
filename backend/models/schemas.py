@@ -49,6 +49,7 @@ class UserOut(BaseModel):
 # ── ANÁLISIS ──────────────────────────────────────
 class AnalyzeRequest(BaseModel):
     content: str          # Texto del mensaje, URL o descripción
+    filename: str = ""    # Nombre del archivo (para detectar tipo)
     channel: str = "otro" # whatsapp | sms | email | telegram | redes | otro
     input_type: str = "msg" # msg | url | file
 
