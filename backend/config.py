@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+    VOYAGE_API_KEY: str = ""
     APP_ENV: str = "production"
     CORS_ORIGINS: str = "https://guiame.pro"
 

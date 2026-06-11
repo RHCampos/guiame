@@ -50,14 +50,45 @@ def node_heuristic(state: AgentState) -> AgentState:
 
 # ── Nodo 3: RAG (búsqueda semántica) ─────────────────────────────────────
 def node_rag(state: AgentState) -> AgentState:
-    # Por ahora retorna contexto vacío — se conecta a pgvector en siguiente sprint
-    # TODO: buscar embeddings similares en PostgreSQL
-    return {
-        **state,
-        "rag_similar_cases": 0,
-        "rag_context": "",
-    }
+    try:
+        import voyageai
+        import psycopg2
+        from ..config import settings as cfg
 
+        vo = voyageai.Client(api_key=cfg.VOYAGE_API_KEY)
+        result = vo.embed([state["content"]], model="voyage-large-2")
+        embedding = result.embeddings[0]
+
+        db_url = cfg.DATABASE_URL.replace("+asyncpg", "")
+        conn = psycopg2.connect(db_url)
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT content_preview, level, score, explanation
+            FROM analyses
+            WHERE embedding IS NOT NULL
+            ORDER BY embedding <-> %s::vector
+            LIMIT 3
+        """, (str(embedding),))
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        if not rows:
+            return {**state, "rag_similar_cases": 0, "rag_context": ""}
+
+        context_lines = []
+        for preview, level, score, explanation in rows:
+            label = {"danger": "PELIGROSO", "warn": "SOSPECHOSO", "safe": "SEGURO"}.get(level, level)
+            context_lines.append(f"- '{preview}' → {label} (score {score}): {(explanation or '')[:100]}")
+
+        return {
+            **state,
+            "rag_similar_cases": len(rows),
+            "rag_context": "\n".join(context_lines),
+        }
+
+    except Exception:
+        return {**state, "rag_similar_cases": 0, "rag_context": ""}
 
 # ── Nodo 4: Análisis LLM ─────────────────────────────────────────────────
 def node_llm(state: AgentState) -> AgentState:

@@ -85,6 +85,16 @@ async def analyze(
         signals=signals_json,
         recommendations=recs_json,
     )
+    # Generar y guardar embedding
+    try:
+        import voyageai
+        from sqlalchemy import text
+        vo = voyageai.Client(api_key=settings.VOYAGE_API_KEY)
+        emb_result = vo.embed([content_to_analyze[:2000]], model="voyage-large-2")
+        embedding = emb_result.embeddings[0]
+        analysis.embedding = embedding
+    except Exception:
+        pass
     db.add(analysis)
     await db.commit()
     await db.refresh(analysis)
