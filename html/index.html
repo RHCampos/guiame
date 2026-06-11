@@ -270,52 +270,57 @@ textarea.main-input:focus{border-color:var(--orange);background:rgba(249,115,22,
 .new-analysis-btn:hover{background:rgba(255,255,255,0.09);color:var(--text)}
 .new-analysis-btn svg{width:15px;height:15px}
 
-/* Verdict hero — más grande y claro */
-.verdict-hero{border-radius:var(--r3);padding:40px 44px;margin-bottom:24px;position:relative;overflow:hidden}
-.vh-danger{background:linear-gradient(135deg,rgba(248,113,113,0.1),rgba(220,38,38,0.05));border:2px solid rgba(248,113,113,0.25)}
-.vh-warn{background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(245,158,11,0.05));border:2px solid rgba(251,191,36,0.25)}
-.vh-safe{background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(16,185,129,0.05));border:2px solid rgba(34,197,94,0.25)}
-.verdict-top{display:flex;align-items:center;gap:24px;margin-bottom:28px}
-.verdict-emoji{font-size:68px;line-height:1;flex-shrink:0}
-.verdict-label{font-family:var(--title);font-size:32px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px}
-.vl-danger{color:#fca5a5} .vl-warn{color:#fde68a} .vl-safe{color:#86efac}
-.verdict-sub{font-size:15px;color:var(--text2);font-weight:300;line-height:1.6}
+/* Verdict hero — más grande e impactante */
+.verdict-hero{border-radius:var(--r3);padding:48px 48px;margin-bottom:32px;position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 32px 80px rgba(0,0,0,0.4)}
+.vh-danger{background:linear-gradient(135deg,rgba(248,113,113,0.2),rgba(220,38,38,0.1));border:2px solid #ef4444;box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 0 32px rgba(239,68,68,0.25),inset 0 0 20px rgba(248,113,113,0.15)}
+.vh-warn{background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1));border:2px solid #f59e0b;box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 0 32px rgba(245,158,11,0.25),inset 0 0 20px rgba(251,191,36,0.15)}
+.vh-safe{background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(16,185,129,0.1));border:2px solid #22c55e;box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 0 32px rgba(34,197,94,0.25),inset 0 0 20px rgba(34,197,94,0.15)}
+.verdict-top{display:flex;align-items:center;gap:32px;margin-bottom:36px}
+.verdict-emoji{font-size:88px;line-height:1;flex-shrink:0;animation:pulse-verdict 2s ease-in-out infinite}
+@keyframes pulse-verdict{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:0.9}}
+.verdict-label{font-family:var(--title);font-size:2.5rem;font-weight:700;letter-spacing:1px;margin-bottom:12px;line-height:1.2}
+.vl-danger{color:#fca5a5;text-shadow:0 0 20px rgba(239,68,68,0.5)}.vl-warn{color:#fde68a;text-shadow:0 0 20px rgba(245,158,11,0.5)}.vl-safe{color:#86efac;text-shadow:0 0 20px rgba(34,197,94,0.5)}
+.verdict-sub{font-size:16px;color:var(--text2);font-weight:400;line-height:1.7}
 
-/* Score strip simplificado */
-.score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07)}
-.score-item{text-align:center}
-.score-big{font-family:var(--title);font-size:32px;font-weight:700;line-height:1}
-.score-caption{font-size:12px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:0.06em}
+/* Score strip con cards separadas */
+.score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:0;border-top:none;margin-top:0}
+.score-item{text-align:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--r2);padding:20px;backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1)}
+.score-big{font-family:var(--title);font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:8px}
+.score-caption{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:500}
 
-/* Confidence bar */
-.conf-block{margin-bottom:24px}
-.conf-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
-.conf-track{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
-.conf-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.22,1,.36,1) 0.5s}
-.cf-danger{background:linear-gradient(90deg,#f87171,#ef4444)}
-.cf-warn{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
-.cf-safe{background:linear-gradient(90deg,#34d399,#10b981)}
+/* Confidence bar — más visible */
+.conf-block{margin-bottom:32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);padding:20px;backdrop-filter:blur(10px)}
+.conf-label{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+.conf-track{height:14px;background:rgba(255,255,255,0.08);border-radius:7px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.3)}
+.conf-fill{height:100%;border-radius:7px;transition:width 1.2s cubic-bezier(.22,1,.36,1) 0.5s;position:relative;box-shadow:0 0 20px currentColor,inset 0 1px 2px rgba(255,255,255,0.3)}
+.cf-danger{background:linear-gradient(90deg,#f87171,#ef4444);box-shadow:0 0 24px rgba(239,68,68,0.4),inset 0 1px 2px rgba(255,255,255,0.3)}
+.cf-warn{background:linear-gradient(90deg,#fbbf24,#f59e0b);box-shadow:0 0 24px rgba(245,158,11,0.4),inset 0 1px 2px rgba(255,255,255,0.3)}
+.cf-safe{background:linear-gradient(90deg,#34d399,#22c55e);box-shadow:0 0 24px rgba(34,197,94,0.4),inset 0 1px 2px rgba(255,255,255,0.3)}
 
 /* Explanation box */
-.explanation-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:24px 28px;margin-bottom:20px;font-size:15px;color:var(--text2);line-height:1.75}
-.explanation-box strong{color:var(--text);font-weight:500}
+.explanation-box{background:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:var(--r2);padding:24px 28px;margin-bottom:24px;font-size:15px;color:var(--text2);line-height:1.8;backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)}
+.explanation-box strong{color:var(--text);font-weight:600;letter-spacing:0.3px}
 
-/* Signals — versión simple */
-.signals-section{margin-bottom:20px}
-.signals-title{font-family:var(--title);font-size:14px;font-weight:700;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px}
-.signals-list{display:flex;flex-direction:column;gap:8px}
-.signal-item{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);font-size:13px;font-weight:500;background:rgba(255,255,255,0.03);border:1px solid var(--border)}
+/* Signals — versión de badges mejorada */
+.signals-section{margin-bottom:28px}
+.signals-title{font-family:var(--title);font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+.signals-list{display:flex;flex-direction:column;gap:10px}
+.signal-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--r2);font-size:14px;font-weight:500;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(10px);transition:all 0.2s}
+.signal-item:has(span:contains('🔴')){background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.signal-item:has(span:contains('🟡')){background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fde68a}
+.signal-item:has(span:contains('✅')),
+.signal-item:has(span:contains('🟢')){background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#86efac}
 
-/* Recommendations */
-.rec-card{background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.12);border-radius:var(--r2);padding:24px 28px;margin-bottom:20px}
-.rec-head{font-family:var(--title);font-size:14px;font-weight:700;color:var(--orange3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.rec-list{display:flex;flex-direction:column;gap:12px}
-.rec-item{display:flex;align-items:flex-start;gap:14px;font-size:14px;color:var(--text2);line-height:1.6}
-.rec-num{min-width:26px;height:26px;background:var(--orange2);border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:var(--title)}
+/* Recommendations — más visuales */
+.rec-card{background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(249,115,22,0.05));border:1px solid rgba(249,115,22,0.2);border-radius:var(--r2);padding:28px;margin-bottom:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)}
+.rec-head{font-family:var(--title);font-size:14px;font-weight:700;color:var(--orange3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.rec-list{display:flex;flex-direction:column;gap:14px}
+.rec-item{display:flex;align-items:flex-start;gap:16px;font-size:15px;color:var(--text2);line-height:1.7;padding:12px;border-radius:var(--r);background:rgba(255,255,255,0.02);border-left:3px solid var(--orange2)}
+.rec-num{min-width:32px;height:32px;background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:50%;color:white;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:var(--title);box-shadow:0 4px 12px rgba(249,115,22,0.3)}
 
-.feedback-row{display:flex;gap:12px;margin-bottom:12px}
-.fb-btn{flex:1;padding:13px;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:var(--r);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.2s}
-.fb-btn:hover{background:rgba(255,255,255,0.08);color:var(--text);border-color:var(--orange)}
+.feedback-row{display:flex;gap:14px;margin-bottom:12px;margin-top:28px}
+.fb-btn{flex:1;padding:16px;background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04));border:1px solid var(--border2);border-radius:var(--r2);font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.25s;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+.fb-btn:hover{background:linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08));color:var(--text);border-color:var(--orange);box-shadow:0 8px 20px rgba(249,115,22,0.2);transform:translateY(-2px)}
 
 /* ── UTILS ── */
 .hidden{display:none!important}
@@ -651,15 +656,15 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
       </div>
       <div class="score-strip">
         <div class="score-item">
-          <div class="score-big score-number" style="color:var(--rose)">92</div>
+          <div class="score-big score-number" style="color:#fca5a5">92</div>
           <div class="score-caption">Riesgo</div>
         </div>
         <div class="score-item">
-          <div class="score-big">6</div>
+          <div class="score-big" style="color:var(--text)">6</div>
           <div class="score-caption">Señales</div>
         </div>
         <div class="score-item">
-          <div class="score-big conf-pct">94%</div>
+          <div class="score-big conf-pct" style="color:#fca5a5">94%</div>
           <div class="score-caption">Certeza</div>
         </div>
       </div>
@@ -678,14 +683,14 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
 
     <!-- Signals -->
     <div class="signals-section">
-      <div class="signals-title">¿Qué encontramos?</div>
+      <div class="signals-title">🔍 ¿Qué encontramos?</div>
       <div class="signals-list">
-        <div class="signal-item"><span>🔴</span> Solicitud de datos bancarios sensibles</div>
-        <div class="signal-item"><span>🔴</span> Dominio que imita a un banco oficial</div>
-        <div class="signal-item"><span>🔴</span> Amenaza de bloqueo de cuenta</div>
-        <div class="signal-item"><span>🟡</span> Urgencia artificial (menos de 24 horas)</div>
-        <div class="signal-item"><span>🟡</span> Enlace sin cifrado seguro</div>
-        <div class="signal-item"><span>✅</span> Sin errores ortográficos graves</div>
+        <div class="signal-item"><span>🔴</span> <strong style="color:#fca5a5">Solicitud de datos bancarios sensibles</strong></div>
+        <div class="signal-item"><span>🔴</span> <strong style="color:#fca5a5">Dominio que imita a un banco oficial</strong></div>
+        <div class="signal-item"><span>🔴</span> <strong style="color:#fca5a5">Amenaza de bloqueo de cuenta</strong></div>
+        <div class="signal-item"><span>🟡</span> <strong style="color:#fde68a">Urgencia artificial (menos de 24 horas)</strong></div>
+        <div class="signal-item"><span>🟡</span> <strong style="color:#fde68a">Enlace sin cifrado seguro</strong></div>
+        <div class="signal-item"><span>✅</span> <strong style="color:#86efac">Sin errores ortográficos graves</strong></div>
       </div>
     </div>
 
