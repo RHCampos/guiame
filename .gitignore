@@ -11,3 +11,7 @@ __pycache__/
 # Backups
 *.tar.gz
 *.sql
+
+# Backups locales HTML
+html/*.bak
+html/index_before_fix_overlay_*.html
