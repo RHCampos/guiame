@@ -385,6 +385,75 @@ html,body{height:100%;background:var(--black);color:var(--text);font-family:var(
 img.nav-shield{width:36px;height:36px;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(249,115,22,0.4))}
 img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;filter:drop-shadow(0 0 10px rgba(249,115,22,0.5)) drop-shadow(0 0 20px rgba(37,99,235,0.4))}
 
+
+/* Ajuste visual suave — pantalla Analizar más compacta */
+@media (min-width:901px){
+  .analysis-body{
+    max-width:920px;
+    padding:32px 40px;
+  }
+
+  .analysis-header{
+    margin-bottom:22px;
+    gap:18px;
+  }
+
+  .analysis-header .hero-icon{
+    width:84px;
+    height:84px;
+  }
+
+  .analysis-header h1{
+    font-size:clamp(32px,4vw,50px);
+  }
+
+  .analysis-card{
+    border-radius:24px;
+  }
+
+  .card-body{
+    padding:24px 28px 18px;
+  }
+
+  .input-tabs-bar{
+    padding:10px 0 14px;
+  }
+
+  .inp-tab{
+    padding:10px 18px;
+    font-size:15px;
+  }
+
+  .inp-tab .tab-icon{
+    width:32px;
+    height:32px;
+  }
+
+  .input-body-inner{
+    padding:16px 18px;
+  }
+
+  #msg-input{
+    min-height:190px;
+    padding:18px 20px;
+    font-size:16px;
+  }
+
+  .tip{
+    padding:14px 16px;
+    margin-top:12px;
+  }
+
+  .card-footer{
+    padding:16px 24px;
+  }
+
+  .cta,
+  .main-analyze-btn{
+    padding:13px 22px;
+  }
+}
+
 /* MOBILE */
 @media(max-width:900px){
   .dash-hero{flex-direction:column;text-align:center;padding:32px 28px}
