@@ -1,5 +1,13 @@
 FROM python:3.12-slim
 
+# OCR para capturas de pantalla
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
+
+
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \

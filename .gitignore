@@ -16,3 +16,8 @@ __pycache__/
 html/*.bak
 html/index_before_fix_overlay_*.html
 html/index_before_*.html
+
+# Backups locales OCR / backend
+backend/Dockerfile_before_*
+backend/requirements_before_*.txt
+backend/agent/file_extractor_before_*.py

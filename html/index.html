@@ -1165,12 +1165,54 @@ function setInputTab(type, btn){
 }
 
 let fileContent = '';
+let fileName = '';
+
 function onFile(inp){
-  if(inp.files[0]){
-    document.getElementById('file-lbl').textContent='📎 '+inp.files[0].name+' — listo para analizar';
-    const reader = new FileReader();
-    reader.onload = function(e){ fileContent = e.target.result; };
-    reader.readAsText(inp.files[0]);
+  const file = inp.files && inp.files[0];
+
+  if(!file){
+    fileContent = '';
+    fileName = '';
+    return;
+  }
+
+  const maxBytes = 10 * 1024 * 1024; // 10 MB
+  if(file.size > maxBytes){
+    alert('El archivo es demasiado grande. Máximo permitido: 10 MB.');
+    inp.value = '';
+    fileContent = '';
+    fileName = '';
+    document.getElementById('file-lbl').textContent = 'Tocá para subir o arrastrá el archivo';
+    return;
+  }
+
+  fileName = file.name;
+  fileContent = '';
+
+  document.getElementById('file-lbl').textContent = '📎 ' + fileName + ' — cargando...';
+
+  const ext = fileName.toLowerCase().split('.').pop();
+  const textExts = ['txt','eml','html','htm','csv','json','md','log'];
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+    fileContent = e.target.result || '';
+    document.getElementById('file-lbl').textContent = '📎 ' + fileName + ' — listo para analizar';
+  };
+
+  reader.onerror = function(){
+    fileContent = '';
+    fileName = '';
+    alert('No se pudo leer el archivo. Intentá nuevamente.');
+    document.getElementById('file-lbl').textContent = 'Tocá para subir o arrastrá el archivo';
+  };
+
+  if(textExts.includes(ext)){
+    reader.readAsText(file);
+  } else {
+    // PDF, DOCX, imágenes y otros binarios se envían como Data URL base64.
+    reader.readAsDataURL(file);
   }
 }
 
@@ -1271,7 +1313,7 @@ async function runAnalysis(){
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${authToken}`
     },
-    body: JSON.stringify({content, channel, input_type: inputType})
+    body: JSON.stringify({content, filename: inputType==='file' ? fileName : '', channel, input_type: inputType})
   });
 
   try {
@@ -1344,6 +1386,20 @@ function renderResult(data){
   // Score strip
   const scoreEl = document.querySelector('.score-number');
   if(scoreEl){ scoreEl.textContent = data.score; scoreEl.style.color = colors[data.level]; }
+
+  // Métricas superiores: Riesgo / Señales / Certeza
+  const scoreBigItems = document.querySelectorAll('.score-strip .score-big');
+  if(scoreBigItems.length >= 3){
+    scoreBigItems[0].textContent = data.score ?? 0;
+    scoreBigItems[0].style.color = colors[data.level];
+
+    const signalCount = Array.isArray(data.signals) ? data.signals.length : 0;
+    scoreBigItems[1].textContent = signalCount;
+    scoreBigItems[1].style.color = signalCount > 0 ? colors[data.level] : 'var(--green)';
+
+    scoreBigItems[2].textContent = (data.confidence ?? 0) + '%';
+    scoreBigItems[2].style.color = colors[data.level];
+  }
 
   // Confidence bar
   const confBar = document.querySelector('.conf-fill');
