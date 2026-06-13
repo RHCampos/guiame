@@ -897,6 +897,12 @@ function switchAuthTab(tab){
   document.getElementById('form-register').classList.toggle('hidden',tab!=='register');
 }
 
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
 function showAuthError(msg){
   let el = document.getElementById('auth-error');
   if(!el){
@@ -907,6 +913,43 @@ function showAuthError(msg){
   }
   el.textContent = msg;
   el.style.display = 'block';
+}
+
+function showEmailVerification(email){
+  const tabs = document.querySelector('.auth-tabs');
+  const loginForm = document.getElementById('form-login');
+  const registerForm = document.getElementById('form-register');
+
+  if(tabs) tabs.style.display = 'none';
+  if(loginForm) loginForm.classList.add('hidden');
+  if(!registerForm) return;
+
+  registerForm.classList.remove('hidden');
+  registerForm.innerHTML = `
+    <div style="text-align:center;padding:10px 4px 2px">
+      <div style="width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.22);font-size:34px;">✉️</div>
+
+      <h2 style="font-family:var(--title);font-size:26px;letter-spacing:.5px;margin-bottom:10px;color:var(--text);">
+        Verificá tu email
+      </h2>
+
+      <p style="font-size:14px;line-height:1.7;color:var(--text2);margin-bottom:18px;">
+        Te enviamos un correo de verificación a<br>
+        <strong style="color:var(--orange3);word-break:break-all;">${escapeHtml(email)}</strong>
+      </p>
+
+      <div class="security-note" style="text-align:left;margin-bottom:18px;">
+        <span style="font-size:16px;line-height:1;">🔐</span>
+        <span>Por seguridad, primero tenés que confirmar tu email. Después vas a poder iniciar sesión normalmente.</span>
+      </div>
+
+      <button class="auth-btn" type="button" onclick="location.reload()">IR AL LOGIN</button>
+
+      <p class="field-hint" style="margin-top:14px;">
+        Si no lo ves, revisá spam o correo no deseado.
+      </p>
+    </div>
+  `;
 }
 
 async function doLogin(){
@@ -964,9 +1007,7 @@ async function doLogin(){
       });
       const data = await res.json();
       if(!res.ok){ showAuthError(data.detail || 'Error al registrarse'); btn.textContent='CREAR MI CUENTA'; btn.disabled=false; return; }
-      saveSession(data);
-      showPage('dashboard');
-      loadDashboard();
+      showEmailVerification(email);
     } catch(e){
       showAuthError('No se pudo conectar con el servidor');
       btn.textContent='CREAR MI CUENTA'; btn.disabled=false;
