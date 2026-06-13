@@ -499,14 +499,16 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
           <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M2 12s0-4 6-4 6 4 6 4H2zm6-5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
           Correo electrónico
         </div>
-        <input class="field-input" type="email" placeholder="usuario@ejemplo.com" id="login-email">
+        <input class="field-input" type="email" placeholder="usuario@ejemplo.com" id="login-email" oninput="validateLoginEmail()" onblur="validateLoginEmail()">
+        <span class="field-error" id="err-login-email"></span>
       </div>
       <div class="field-group">
         <div class="field-label">
           <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 1a4 4 0 0 1 4 4v1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1V5a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 5.5 5v1h5V5A2.5 2.5 0 0 0 8 2.5z"/></svg>
           Contraseña
         </div>
-        <input class="field-input" type="password" placeholder="Mínimo 12 caracteres" id="login-pass">
+        <input class="field-input" type="password" placeholder="Mínimo 12 caracteres" id="login-pass" oninput="validateLoginPass()" onblur="validateLoginPass()">
+        <span class="field-error" id="err-login-pass"></span>
         <div class="field-hint">¿Olvidaste tu contraseña? <span style="color:var(--orange3);cursor:pointer" onclick="showForgotPassword()">Recuperar acceso</span></div>
       </div>
       <button class="auth-btn" onclick="doLogin()">
@@ -916,7 +918,9 @@ async function doLogin(){
   if(isLogin){
     const email = document.getElementById('login-email').value.trim();
     const pass  = document.getElementById('login-pass').value;
-    if(!email || !pass){ showAuthError('Completá todos los campos'); return; }
+    const vEmail = validateLoginEmail();
+    const vPass = validateLoginPass();
+    if(!vEmail || !vPass){ return; }
 
     const btn = document.querySelector('#form-login .auth-btn');
     btn.textContent = 'Verificando...';
@@ -1362,6 +1366,21 @@ function setFieldState(inputId, errorId, isValid, msg){
   err.textContent = isValid ? '' : msg;
   err.classList.toggle('visible', !isValid);
 }
+
+function validateLoginEmail(){
+  const v = (document.getElementById('login-email')||{}).value || '';
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  setFieldState('login-email','err-login-email', ok, 'Ingresá un email válido (ej: usuario@ejemplo.com)');
+  return ok;
+}
+
+function validateLoginPass(){
+  const v = (document.getElementById('login-pass')||{}).value || '';
+  const ok = v.length >= 12;
+  setFieldState('login-pass','err-login-pass', ok, 'El mínimo es 12 caracteres, ingresá otra contraseña con esa cantidad');
+  return ok;
+}
+
 function validateRegName(){
   const v = (document.getElementById('reg-name')||{}).value||'';
   setFieldState('reg-name','err-reg-name', v.trim().length>=2, 'Ingresá tu nombre completo (mínimo 2 caracteres)');
