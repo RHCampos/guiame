@@ -466,6 +466,125 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
   .verdict-emoji{font-size:52px}
   .verdict-label{font-size:24px}
 }
+
+/* ── GuIAme v1.5.7: Modo Rescate ── */
+.rescue-card{
+  margin-top:28px;
+  padding:28px;
+  border-radius:18px;
+  background:radial-gradient(circle at top left, rgba(251,113,35,.18), transparent 35%), rgba(17,24,39,.78);
+  border:1px solid rgba(251,113,35,.35);
+  box-shadow:0 18px 45px rgba(0,0,0,.25);
+}
+.rescue-head{
+  color:#fb923c;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.rescue-sub{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.6;
+  margin-bottom:18px;
+}
+.rescue-options{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.rescue-btn{
+  cursor:pointer;
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(15,23,42,.72);
+  color:var(--text2);
+  border-radius:14px;
+  padding:14px 16px;
+  font-weight:700;
+  text-align:left;
+  transition:.18s ease;
+}
+.rescue-btn:hover{
+  border-color:rgba(251,113,35,.55);
+  background:rgba(251,113,35,.10);
+  transform:translateY(-1px);
+}
+.rescue-btn.active{
+  border-color:#fb923c;
+  background:rgba(251,113,35,.16);
+  color:#fff7ed;
+}
+.rescue-plan{
+  margin-top:20px;
+  padding:22px;
+  border-radius:16px;
+  border:1px solid rgba(96,165,250,.25);
+  background:rgba(15,23,42,.72);
+}
+.rescue-plan.hidden{display:none;}
+.rescue-plan-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.rescue-plan-title{
+  color:var(--text2);
+  font-size:15px;
+  font-weight:800;
+}
+.rescue-badge{
+  flex-shrink:0;
+  border-radius:999px;
+  padding:5px 10px;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.rescue-badge.preventivo{background:rgba(34,197,94,.14);color:#86efac;border:1px solid rgba(34,197,94,.35);}
+.rescue-badge.atencion{background:rgba(250,204,21,.14);color:#fde68a;border:1px solid rgba(250,204,21,.35);}
+.rescue-badge.urgente{background:rgba(251,113,35,.16);color:#fdba74;border:1px solid rgba(251,113,35,.45);}
+.rescue-badge.critico{background:rgba(244,63,94,.16);color:#fda4af;border:1px solid rgba(244,63,94,.45);}
+.rescue-steps{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:14px;
+}
+.rescue-step{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.035);
+  color:var(--muted);
+  line-height:1.55;
+  font-size:14px;
+}
+.rescue-step-num{
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fb6a16;
+  color:white;
+  font-size:11px;
+  font-weight:900;
+  flex-shrink:0;
+}
+@media(max-width:720px){
+  .rescue-options{grid-template-columns:1fr;}
+  .rescue-card{padding:20px;}
+  .rescue-plan-top{align-items:flex-start;flex-direction:column;}
+}
+
 </style>
 </head>
 <body>
@@ -848,6 +967,27 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
         <div class="rec-item"><div class="rec-num">5</div><span>Si ya ingresaste datos, contactá a tu banco de inmediato</span></div>
       </div>
     </div>
+
+      <!-- Rescue Mode -->
+      <div class="rescue-card">
+        <div class="rescue-head">🚨 Modo Rescate</div>
+        <div class="rescue-sub">
+          ¿Ya interactuaste con este mensaje, enlace o archivo?
+          Seleccioná la opción que mejor describe tu situación y GuIAme te dará una guía personalizada.
+        </div>
+
+        <div class="rescue-options">
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('no_click', this)">✅ No hice clic</button>
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('clicked_link', this)">🔗 Hice clic en el enlace</button>
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('entered_password', this)">🔑 Ingresé una contraseña</button>
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('bank_data', this)">💳 Ingresé datos bancarios</button>
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('shared_code', this)">📲 Compartí un código</button>
+          <button type="button" class="rescue-btn" onclick="selectRescueCase('opened_file', this)">📎 Descargué o abrí un archivo</button>
+        </div>
+
+        <div id="rescue-plan" class="rescue-plan hidden" aria-live="polite"></div>
+      </div>
+
 
     <div class="feedback-row">
       <button class="fb-btn" onclick="sendFeedback(true)">👍 El resultado fue correcto</button>
@@ -1366,6 +1506,7 @@ async function runAnalysis(){
 }
 
 function renderResult(data){
+  resetRescueMode();
   const icons = {danger:'🚨', warn:'⚠️', safe:'✅'};
   const colors = {danger:'var(--rose)', warn:'var(--amber)', safe:'var(--green)'};
   const levelLabels = {danger:'Peligro detectado', warn:'Mensaje sospechoso', safe:'Parece seguro'};
@@ -1429,6 +1570,119 @@ function renderResult(data){
 }
 
 // ── FEEDBACK ──
+
+// ── GuIAme v1.5.7: Modo Rescate ──
+const rescuePlans = {
+  no_click: {
+    title: "Buen trabajo, todavía estás a tiempo.",
+    level: "Preventivo",
+    badge: "preventivo",
+    steps: [
+      "No abras el enlace ni respondas el mensaje.",
+      "Eliminá o archivá el mensaje sospechoso.",
+      "Bloqueá al remitente si no lo conocés.",
+      "Verificá la información desde la app o sitio oficial."
+    ]
+  },
+  clicked_link: {
+    title: "Actuá con calma y no ingreses datos.",
+    level: "Atención",
+    badge: "atencion",
+    steps: [
+      "Cerrá la página inmediatamente.",
+      "No ingreses ningún dato personal.",
+      "No descargues archivos desde esa página.",
+      "Ingresá manualmente desde la app o sitio oficial si necesitás verificar algo.",
+      "Revisá si el navegador descargó algún archivo automáticamente."
+    ]
+  },
+  entered_password: {
+    title: "Este caso requiere acción rápida.",
+    level: "Urgente",
+    badge: "urgente",
+    steps: [
+      "Cambiá inmediatamente la contraseña desde el sitio o app oficial.",
+      "Si usabas esa misma contraseña en otros servicios, cambiala también allí.",
+      "Activá la verificación en dos pasos.",
+      "Cerrá sesiones abiertas desde la configuración de seguridad.",
+      "Revisá la actividad reciente de la cuenta."
+    ]
+  },
+  bank_data: {
+    title: "Este caso puede implicar riesgo financiero.",
+    level: "Crítico",
+    badge: "critico",
+    steps: [
+      "Contactá inmediatamente a tu banco desde canales oficiales.",
+      "Solicitá el bloqueo preventivo de tarjetas o cuentas si corresponde.",
+      "Revisá movimientos recientes.",
+      "No respondas nuevos mensajes del supuesto banco.",
+      "Guardá evidencia del mensaje recibido."
+    ]
+  },
+  shared_code: {
+    title: "Puede tratarse de un intento de robo de cuenta.",
+    level: "Crítico",
+    badge: "critico",
+    steps: [
+      "No compartas más códigos con nadie.",
+      "Revisá si todavía tenés acceso a tu cuenta.",
+      "Activá o revisá la verificación en dos pasos.",
+      "Cerrá sesiones desconocidas.",
+      "Si perdiste acceso, iniciá el proceso oficial de recuperación."
+    ]
+  },
+  opened_file: {
+    title: "Este caso puede implicar riesgo para el dispositivo.",
+    level: "Urgente",
+    badge: "urgente",
+    steps: [
+      "No abras nuevamente el archivo.",
+      "Eliminá el archivo si no confiás en su origen.",
+      "Ejecutá un análisis con tu antivirus.",
+      "No ingreses contraseñas ni datos sensibles hasta verificar el equipo.",
+      "Si el dispositivo funciona extraño, pedí ayuda técnica."
+    ]
+  }
+};
+
+function selectRescueCase(key, btn){
+  const plan = rescuePlans[key];
+  const box = document.getElementById("rescue-plan");
+  if(!plan || !box) return;
+
+  document.querySelectorAll(".rescue-btn").forEach(b => b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="rescue-plan-top">
+      <div class="rescue-plan-title">🛟 ${plan.title}</div>
+      <div class="rescue-badge ${plan.badge}">${plan.level}</div>
+    </div>
+    <div class="rescue-steps">
+      ${plan.steps.map((step, i) => `
+        <div class="rescue-step">
+          <div class="rescue-step-num">${i + 1}</div>
+          <div>${step}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  box.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function resetRescueMode(){
+  const box = document.getElementById("rescue-plan");
+  if(box){
+    box.classList.add("hidden");
+    box.innerHTML = "";
+  }
+  document.querySelectorAll(".rescue-btn").forEach(b => b.classList.remove("active"));
+}
+
+
 async function sendFeedback(isCorrect){
   if(!lastAnalysisId || !authToken) return;
   try {
