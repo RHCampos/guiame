@@ -21,3 +21,7 @@ html/index_before_*.html
 backend/Dockerfile_before_*
 backend/requirements_before_*.txt
 backend/agent/file_extractor_before_*.py
+
+# Backups locales de desarrollo
+backend/**/*_before_*
+html/index_before_*.html
