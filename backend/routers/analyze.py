@@ -10,7 +10,7 @@ from jose import jwt, JWTError
 from ..db.database import get_db, User, Analysis, Feedback
 from ..models.schemas import (
     AnalyzeRequest, AnalyzeResponse, SignalItem,
-    HistoryItem, FeedbackRequest
+    HistoryItem, FeedbackRequest, RescueRequest
 )
 from ..agent.graph import run_analysis
 from ..agent.file_extractor import extract_text_from_file
@@ -155,6 +155,50 @@ async def get_history(
         )
         for a in analyses
     ]
+
+
+RESCUE_CASES = {
+    "no_click": {"level": "preventivo", "label": "No hizo clic"},
+    "clicked_link": {"level": "atencion", "label": "Hizo clic en el enlace"},
+    "entered_password": {"level": "urgente", "label": "Ingresó una contraseña"},
+    "bank_data": {"level": "critico", "label": "Ingresó datos bancarios"},
+    "shared_code": {"level": "critico", "label": "Compartió un código de verificación"},
+    "opened_file": {"level": "urgente", "label": "Descargó o abrió un archivo"},
+}
+
+
+@router.post("/rescue", status_code=200)
+async def save_rescue_case(
+    data: RescueRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if data.rescue_case not in RESCUE_CASES:
+        raise HTTPException(status_code=400, detail="Caso de rescate inválido")
+
+    result = await db.execute(
+        select(Analysis).where(
+            Analysis.id == data.analysis_id,
+            Analysis.user_id == current_user.id
+        )
+    )
+    analysis = result.scalar_one_or_none()
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Análisis no encontrado")
+
+    analysis.rescue_case = data.rescue_case
+    analysis.rescue_level = RESCUE_CASES[data.rescue_case]["level"]
+    analysis.rescue_used_at = datetime.utcnow()
+
+    await db.commit()
+
+    return {
+        "message": "Modo Rescate registrado correctamente",
+        "analysis_id": analysis.id,
+        "rescue_case": analysis.rescue_case,
+        "rescue_level": analysis.rescue_level
+    }
+
 
 
 @router.post("/feedback", status_code=200)

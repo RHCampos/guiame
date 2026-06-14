@@ -1671,6 +1671,32 @@ function selectRescueCase(key, btn){
   `;
 
   box.scrollIntoView({behavior:"smooth", block:"nearest"});
+  saveRescueCase(key);
+}
+
+
+async function saveRescueCase(key){
+  if(!lastAnalysisId || !authToken) return;
+
+  try {
+    const res = await fetch(`${API}/rescue`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        analysis_id: lastAnalysisId,
+        rescue_case: key
+      })
+    });
+
+    if(!res.ok){
+      console.warn('No se pudo guardar Modo Rescate');
+    }
+  } catch(e){
+    console.error('Error guardando Modo Rescate:', e);
+  }
 }
 
 function resetRescueMode(){

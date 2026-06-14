@@ -41,6 +41,10 @@ class UserOut(BaseModel):
     name: str
     email: str
     created_at: datetime
+    input_type: str = "msg"
+    rescue_case: Optional[str] = None
+    rescue_level: Optional[str] = None
+    rescue_used_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -81,6 +85,12 @@ class HistoryItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── MODO RESCATE ───────────────────────────────────
+class RescueRequest(BaseModel):
+    analysis_id: int
+    rescue_case: str
 
 
 # ── FEEDBACK ──────────────────────────────────────
