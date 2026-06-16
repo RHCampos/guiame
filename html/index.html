@@ -1472,7 +1472,19 @@ async function runAnalysis(){
 
     if(!res.ok){
       if(res.status===401){ doLogout(); return; }
-      throw new Error(data.detail || 'Error en el análisis');
+        if(res.status===429){
+          const message =
+            data.detail?.message ||
+            'Alcanzaste el límite diario de 10 análisis. Podrás volver a consultar mañana.';
+          throw new Error(message);
+        }
+
+        const message =
+          typeof data.detail === 'string'
+            ? data.detail
+            : (data.detail?.message || 'Error en el análisis');
+
+        throw new Error(message);
     }
 
     lastAnalysisId = data.analysis_id;

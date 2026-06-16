@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from jose import jwt, JWTError
 
 from ..db.database import get_db, User, Analysis, Feedback
@@ -18,6 +18,8 @@ from ..config import settings
 
 router = APIRouter(tags=["analysis"])
 bearer = HTTPBearer()
+
+DAILY_ANALYSIS_LIMIT = 10
 
 
 async def get_current_user(
@@ -47,6 +49,28 @@ async def analyze(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Control de uso diario por usuario
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    daily_count_result = await db.execute(
+        select(func.count(Analysis.id)).where(
+            Analysis.user_id == current_user.id,
+            Analysis.created_at >= today_start
+        )
+    )
+    used_today = daily_count_result.scalar() or 0
+
+    if used_today >= DAILY_ANALYSIS_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "message": "Alcanzaste el límite diario de 10 análisis. Podrás volver a consultar mañana.",
+                "code": "DAILY_LIMIT_REACHED",
+                "limit": DAILY_ANALYSIS_LIMIT,
+                "used_today": used_today
+            }
+        )
+
     # Extraer texto si es archivo
     content_to_analyze = data.content
     if data.input_type == "file":
