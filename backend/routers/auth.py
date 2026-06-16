@@ -1,4 +1,5 @@
 import secrets
+import re
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,53 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return _bcrypt.checkpw(plain[:72].encode(), hashed.encode())
+
+
+def validate_password_strength(password: str):
+    """
+    Política de contraseña segura para GUIAME:
+    - mínimo 12 caracteres
+    - al menos una mayúscula
+    - al menos una minúscula
+    - al menos un número
+    - al menos un carácter especial
+    - sin espacios al inicio o final
+    """
+    if not password or password != password.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña no debe tener espacios al inicio o al final."
+        )
+
+    if len(password) < 12:
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña debe tener al menos 12 caracteres."
+        )
+
+    if not re.search(r"[A-Z]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña debe incluir al menos una letra mayúscula."
+        )
+
+    if not re.search(r"[a-z]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña debe incluir al menos una letra minúscula."
+        )
+
+    if not re.search(r"\d", password):
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña debe incluir al menos un número."
+        )
+
+    if not re.search(r"[^A-Za-z0-9\s]", password):
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña debe incluir al menos un carácter especial."
+        )
 
 # --- JWT ---
 def create_token(user_id: int, email: str) -> str:
@@ -73,8 +121,7 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="El email ya está registrado")
-    if len(data.password) < 12:
-        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 12 caracteres")
+    validate_password_strength(data.password)
 
     token = secrets.token_hex(32)
     expires = datetime.utcnow() + timedelta(hours=VERIFICATION_EXPIRE_HOURS)
@@ -207,8 +254,7 @@ async def forgot_password(data: ForgotPasswordRequest, db: AsyncSession = Depend
 
 @router.post("/reset-password", status_code=200)
 async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    if len(data.new_password) < 12:
-        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 12 caracteres")
+    validate_password_strength(data.new_password)
     result = await db.execute(select(User).where(User.reset_token == data.token))
     user = result.scalar_one_or_none()
     if not user:

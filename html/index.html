@@ -585,6 +585,32 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
   .rescue-plan-top{align-items:flex-start;flex-direction:column;}
 }
 
+
+.password-policy{
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(96,165,250,0.16);
+  background:rgba(37,99,235,0.07);
+  font-size:12px;
+  line-height:1.65;
+  color:#94a3c0;
+}
+.password-policy-title{
+  font-weight:700;
+  color:#cbd5e1;
+  margin-bottom:4px;
+}
+.password-policy-item{
+  display:block;
+}
+.password-policy-item.ok{
+  color:#86efac;
+}
+.password-policy-item.bad{
+  color:#fca5a5;
+}
+
 </style>
 </head>
 <body>
@@ -655,8 +681,15 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
       </div>
       <div class="field-group">
         <div class="field-label">Contraseña</div>
-        <input class="field-input" id="reg-pass" type="password" placeholder="Mínimo 12 caracteres" oninput="validateRegPass()" onblur="validateRegPass()">
-        <div class="field-hint">Usá una frase larga o combinación de letras, números y símbolos.</div>
+        <input class="field-input" id="reg-pass" type="password" placeholder="Ej: GuiameSeguro2026!" oninput="validateRegPass(); validateRegPass2()" onblur="validateRegPass(); validateRegPass2()">
+        <div class="password-policy" id="reg-pass-policy">
+            <div class="password-policy-title">Requisitos de contraseña:</div>
+            <div class="password-policy-item bad" id="pass-req-len">❌ Mínimo 12 caracteres</div>
+            <div class="password-policy-item bad" id="pass-req-upper">❌ Una mayúscula</div>
+            <div class="password-policy-item bad" id="pass-req-lower">❌ Una minúscula</div>
+            <div class="password-policy-item bad" id="pass-req-number">❌ Un número</div>
+            <div class="password-policy-item bad" id="pass-req-special">❌ Un carácter especial</div>
+          </div>
         <span class="field-error" id="err-reg-pass"></span>
       </div>
       <div class="field-group">
@@ -1781,13 +1814,60 @@ function validateRegEmail(){
   setFieldState('reg-email','err-reg-email', ok, 'Ingresá un email válido (ej: usuario@ejemplo.com)');
   return ok;
 }
-function validateRegPass(){
-  const v = (document.getElementById('reg-pass')||{}).value||'';
-  const ok = v.length>=12;
-  setFieldState('reg-pass','err-reg-pass', ok, 'El mínimo es 12 caracteres, ingresá otra contraseña con esa cantidad');
-  validateRegPass2();
-  return ok;
+function updatePassReq(id, ok, label){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = (ok ? '✅ ' : '❌ ') + label;
+  el.classList.toggle('ok', ok);
+  el.classList.toggle('bad', !ok);
 }
+
+function updatePasswordPolicyChecklist(pass){
+  updatePassReq('pass-req-len', pass.length >= 12, 'Mínimo 12 caracteres');
+  updatePassReq('pass-req-upper', /[A-Z]/.test(pass), 'Una mayúscula');
+  updatePassReq('pass-req-lower', /[a-z]/.test(pass), 'Una minúscula');
+  updatePassReq('pass-req-number', /[0-9]/.test(pass), 'Un número');
+  updatePassReq('pass-req-special', /[^A-Za-z0-9\s]/.test(pass), 'Un carácter especial');
+}
+
+function validateRegPass(){
+  const pass = document.getElementById('reg-pass').value;
+  const err = document.getElementById('err-reg-pass');
+
+  updatePasswordPolicyChecklist(pass);
+
+  if(!pass){
+    err.textContent = 'Ingresá una contraseña.';
+    err.style.display = 'block';
+    return false;
+  }
+
+  if(pass !== pass.trim()){
+    err.textContent = 'La contraseña no debe tener espacios al inicio o al final.';
+    err.style.display = 'block';
+    return false;
+  }
+
+  const missing = [];
+
+  if(pass.length < 12) missing.push('mínimo 12 caracteres');
+  if(!/[A-Z]/.test(pass)) missing.push('una mayúscula');
+  if(!/[a-z]/.test(pass)) missing.push('una minúscula');
+  if(!/[0-9]/.test(pass)) missing.push('un número');
+  if(!/[^A-Za-z0-9\s]/.test(pass)) missing.push('un carácter especial');
+
+  if(missing.length){
+    err.textContent = 'Falta: ' + missing.join(', ') + '.';
+    err.style.display = 'block';
+    return false;
+  }
+
+  err.textContent = '';
+  err.style.display = 'none';
+  return true;
+}
+
+
 function validateRegPass2(){
   const p1 = (document.getElementById('reg-pass')||{}).value||'';
   const p2 = (document.getElementById('reg-pass2')||{}).value||'';
