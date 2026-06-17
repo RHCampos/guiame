@@ -18,6 +18,7 @@ LOCKOUT_MINUTES_1 = 15    # 1er bloqueo
 LOCKOUT_MINUTES_2 = 60    # 2do bloqueo
 LOCKOUT_PERMANENT = 3     # A partir del 3er bloqueo → forzar reset
 VERIFICATION_EXPIRE_HOURS = 24
+MAX_PASSWORD_LENGTH = 64
 
 # --- Passwords ---
 def hash_password(password: str) -> str:
@@ -47,6 +48,12 @@ def validate_password_strength(password: str):
         raise HTTPException(
             status_code=400,
             detail="La contraseña debe tener al menos 12 caracteres."
+        )
+
+    if len(password) > MAX_PASSWORD_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"La contraseña no debe superar los {MAX_PASSWORD_LENGTH} caracteres."
         )
 
     if not re.search(r"[A-Z]", password):

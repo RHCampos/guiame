@@ -833,6 +833,7 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
         <div class="password-policy" id="reg-pass-policy">
             <div class="password-policy-title">Requisitos de contraseña:</div>
             <div class="password-policy-item bad" id="pass-req-len">❌ Mínimo 12 caracteres</div>
+            <div class="password-policy-item bad" id="pass-req-max">❌ Máximo 64 caracteres</div>
             <div class="password-policy-item bad" id="pass-req-upper">❌ Una mayúscula</div>
             <div class="password-policy-item bad" id="pass-req-lower">❌ Una minúscula</div>
             <div class="password-policy-item bad" id="pass-req-number">❌ Un número</div>
@@ -1972,6 +1973,7 @@ function updatePassReq(id, ok, label){
 
 function updatePasswordPolicyChecklist(pass){
   updatePassReq('pass-req-len', pass.length >= 12, 'Mínimo 12 caracteres');
+  updatePassReq('pass-req-max', pass.length <= 64, 'Máximo 64 caracteres');
   updatePassReq('pass-req-upper', /[A-Z]/.test(pass), 'Una mayúscula');
   updatePassReq('pass-req-lower', /[a-z]/.test(pass), 'Una minúscula');
   updatePassReq('pass-req-number', /[0-9]/.test(pass), 'Un número');
@@ -1999,6 +2001,7 @@ function validateRegPass(){
   const missing = [];
 
   if(pass.length < 12) missing.push('mínimo 12 caracteres');
+  if(pass.length > 64) missing.push('máximo 64 caracteres');
   if(!/[A-Z]/.test(pass)) missing.push('una mayúscula');
   if(!/[a-z]/.test(pass)) missing.push('una minúscula');
   if(!/[0-9]/.test(pass)) missing.push('un número');
