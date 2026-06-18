@@ -41,3 +41,32 @@ app.include_router(analyze.router, prefix="/api")
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "service": "GuIAme API", "version": "1.0.0"}
+
+# ============================================================
+# GUIAME v1.5.10 — audit_log_node
+# Auditoría automática de endpoints relevantes.
+# ============================================================
+try:
+    from guiame.audit_log_node import audit_http_event
+except Exception:
+    try:
+        from backend.audit_log_node import audit_http_event
+    except Exception:
+        try:
+            from audit_log_node import audit_http_event
+        except Exception:
+            audit_http_event = None
+
+
+@app.middleware("http")
+async def guiame_audit_log_middleware(request, call_next):
+    response = await call_next(request)
+
+    try:
+        if audit_http_event is not None:
+            audit_http_event(request, response.status_code)
+    except Exception:
+        pass
+
+    return response
+
