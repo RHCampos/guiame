@@ -70,3 +70,69 @@ async def guiame_audit_log_middleware(request, call_next):
 
     return response
 
+
+# ============================================================
+# GUIAME v1.5.11 — admin_metrics_node
+# Endpoint interno protegido para métricas administrativas.
+# ============================================================
+try:
+    import hmac
+    import os
+    from typing import Optional
+
+    from fastapi import Header, HTTPException, Query
+
+    from guiame.admin_metrics_node import get_admin_metrics
+
+    def _guiame_admin_metrics_expected_token() -> Optional[str]:
+        token = os.getenv("GUIAME_ADMIN_METRICS_TOKEN")
+
+        if token:
+            return token.strip()
+
+        local_paths = (
+            "/app/guiame/admin_metrics_token.local",
+            "backend/admin_metrics_token.local",
+            "admin_metrics_token.local",
+        )
+
+        for path in local_paths:
+            try:
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        value = f.read().strip()
+                        if value:
+                            return value
+            except Exception:
+                pass
+
+        return None
+
+
+    @app.get("/api/admin/metrics")
+    async def guiame_admin_metrics_endpoint(
+        days: int = Query(7, ge=1, le=90),
+        x_guiame_admin_token: Optional[str] = Header(default=None),
+    ):
+        expected_token = _guiame_admin_metrics_expected_token()
+
+        if not expected_token:
+            raise HTTPException(
+                status_code=503,
+                detail="Admin metrics token is not configured",
+            )
+
+        if not x_guiame_admin_token or not hmac.compare_digest(
+            x_guiame_admin_token,
+            expected_token,
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid admin metrics token",
+            )
+
+        return await get_admin_metrics(days=days)
+
+except Exception as exc:
+    print(f"GUIAME v1.5.11 admin_metrics_node no pudo cargarse: {exc}")
+

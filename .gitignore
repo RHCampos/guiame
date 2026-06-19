@@ -25,3 +25,5 @@ backend/agent/file_extractor_before_*.py
 # Backups locales de desarrollo
 backend/**/*_before_*
 html/index_before_*.html
+backend/admin_metrics_token.local
+backups/
