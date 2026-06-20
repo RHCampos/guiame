@@ -1453,6 +1453,14 @@ function renderDashboardHistory(items){
     if(diff < 1440) return `hace ${Math.floor(diff/60)}h`;
     return `hace ${Math.floor(diff/1440)} días`;
   };
+  function escapeHTML(value){
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+  }
   container.innerHTML = items.map(h=>`
     <div class="hist-item">
       <div class="hist-text">
@@ -1460,9 +1468,9 @@ function renderDashboardHistory(items){
           <span style="margin-right:6px">${typeIcon(h.content_preview)}</span>
           <strong style="color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">${typeLabel(h)}</strong>
           <span style="margin:0 6px;color:var(--text3)">·</span>
-          <span style="color:var(--text)">${h.content_preview}</span>
+          <span style="color:var(--text)">${escapeHTML(h.content_preview)}</span>
         </div>
-        <div class="hist-meta">${timeAgo(h.created_at)} · ${h.channel}</div>
+        <div class="hist-meta">${escapeHTML(timeAgo(h.created_at))} · ${escapeHTML(h.channel || '')}</div>
       </div>
       <span class="hist-badge" style="background:${levelColor[h.level]}22;color:${levelColor[h.level]};padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap">
         ${levelIcon[h.level]} ${levelLabel[h.level]}
