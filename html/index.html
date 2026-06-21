@@ -1179,6 +1179,34 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
 </div>
 
 <script>
+
+function safeLog(eventName){
+  // GUIAME production-safe log:
+  // No expone stack traces, tokens, URLs internas ni datos del usuario.
+  // Intencionalmente no imprime el objeto de error completo.
+  return {
+    event: String(eventName || 'GUIAME_EVENT'),
+    timestamp: new Date().toISOString()
+  };
+}
+
+function safeUserError(err, fallback){
+  const raw = String((err && err['message']) || '').trim();
+
+  // Permitimos solo mensajes funcionales ya controlados por la app.
+  const allowedMessages = [
+    'Alcanzaste el límite diario de 10 análisis. Podrás volver a consultar mañana.',
+    'URL inválida o no permitida'
+  ];
+
+  if(allowedMessages.includes(raw)){
+    return raw;
+  }
+
+  return fallback || 'No se pudo completar la operación. Intentá nuevamente.';
+}
+
+
 // ── NAVIGATION ──
 function showPage(name){
   // Si intenta ir a resultado sin análisis activo, redirigir a análisis
@@ -1427,7 +1455,7 @@ async function loadDashboard(){
     document.querySelectorAll('.stat-val')[0].textContent = total;
     document.querySelectorAll('.stat-val')[1].textContent = threats;
     document.querySelectorAll('.stat-val')[2].textContent = safe+'%';
-  } catch(e){ console.error('Error cargando dashboard:', e); }
+  } catch(e){ safeLog('DASHBOARD_LOAD_ERROR'); }
 }
 
 function renderDashboardHistory(items){
@@ -1728,7 +1756,7 @@ async function runAnalysis(){
       el.className = j === 0 ? 'a-step active' : 'a-step';
       el.innerHTML = '<div class="step-circle"></div>' + stepLabels[j];
     });
-    alert('Error al analizar: '+e.message);
+    alert(safeUserError(e, 'No se pudo completar el análisis. Intentá nuevamente.'));
   }
 }
 
@@ -1919,10 +1947,10 @@ async function saveRescueCase(key){
     });
 
     if(!res.ok){
-      console.warn('No se pudo guardar Modo Rescate');
+      safeLog('RESCUE_SAVE_WARNING');
     }
   } catch(e){
-    console.error('Error guardando Modo Rescate:', e);
+    safeLog('RESCUE_SAVE_ERROR');
   }
 }
 
@@ -1949,7 +1977,7 @@ async function sendFeedback(isCorrect){
     });
     const fbBlock = document.querySelector('.feedback-block');
     if(fbBlock) fbBlock.innerHTML = '<p style="font-size:13px;color:var(--text2);text-align:center;padding:10px 0;font-weight:500">✓ ¡Gracias! Tu feedback nos ayuda a mejorar GuIAme.</p>';
-  } catch(e){ console.error('Error enviando feedback:', e); }
+  } catch(e){ safeLog('FEEDBACK_SEND_ERROR'); }
 }
 
 // Auto-login si hay token guardado
