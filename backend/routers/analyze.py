@@ -26,6 +26,77 @@ bearer = HTTPBearer()
 DAILY_ANALYSIS_LIMIT = 10
 
 
+ALLOWED_CHANNELS = {
+    "whatsapp",
+    "sms",
+    "email",
+    "telegram",
+    "redes",
+    "otro",
+}
+
+MAX_MESSAGE_CHARS = 10000
+MAX_FEEDBACK_COMMENT_CHARS = 1000
+MAX_HISTORY_LIMIT = 50
+
+
+def validate_channel_or_raise(channel: str) -> str:
+    clean = str(channel or "otro").strip().lower()
+
+    if clean not in ALLOWED_CHANNELS:
+        raise HTTPException(
+            status_code=400,
+            detail="Canal inválido"
+        )
+
+    return clean
+
+
+def validate_content_or_raise(input_type: str, content: str) -> None:
+    if not isinstance(content, str) or not content.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Contenido vacío o inválido"
+        )
+
+    if input_type == "msg" and len(content) > MAX_MESSAGE_CHARS:
+        raise HTTPException(
+            status_code=400,
+            detail="El mensaje supera el tamaño máximo permitido"
+        )
+
+
+def validate_positive_id_or_raise(value: int, label: str = "ID") -> None:
+    try:
+        numeric_value = int(value)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{label} inválido"
+        )
+
+    if numeric_value <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{label} inválido"
+        )
+
+
+def validate_feedback_comment_or_raise(comment: str | None) -> str | None:
+    if comment is None:
+        return None
+
+    clean = str(comment).strip()
+
+    if len(clean) > MAX_FEEDBACK_COMMENT_CHARS:
+        raise HTTPException(
+            status_code=400,
+            detail="El comentario supera el tamaño máximo permitido"
+        )
+
+    return clean or None
+
+
 MAX_FILE_BYTES = 10 * 1024 * 1024
 
 ALLOWED_FILE_EXTS = {
@@ -205,6 +276,10 @@ async def analyze(
             detail="Tipo de entrada inválido"
         )
 
+    # Validaciones de backend para entrada general
+    data.channel = validate_channel_or_raise(data.channel)
+    validate_content_or_raise(data.input_type, data.content)
+
     # Validación de seguridad para URLs antes de consumir cuota o ejecutar el agente
     if data.input_type == "url":
         if not is_safe_public_url(data.content):
@@ -331,6 +406,11 @@ async def get_history(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    if limit < 1:
+        limit = 1
+    if limit > MAX_HISTORY_LIMIT:
+        limit = MAX_HISTORY_LIMIT
+
     result = await db.execute(
         select(Analysis)
         .where(Analysis.user_id == current_user.id)
@@ -367,8 +447,13 @@ async def save_rescue_case(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    validate_positive_id_or_raise(data.analysis_id, "Análisis")
+
     if data.rescue_case not in RESCUE_CASES:
         raise HTTPException(status_code=400, detail="Caso de rescate inválido")
+
+    validate_positive_id_or_raise(data.analysis_id, "Análisis")
+    data.comment = validate_feedback_comment_or_raise(data.comment)
 
     result = await db.execute(
         select(Analysis).where(
