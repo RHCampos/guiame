@@ -2,6 +2,7 @@ import json
 import hashlib
 import ipaddress
 import socket
+import re
 from urllib.parse import urlparse
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,6 +24,81 @@ router = APIRouter(tags=["analysis"])
 bearer = HTTPBearer()
 
 DAILY_ANALYSIS_LIMIT = 10
+
+
+MAX_FILE_BYTES = 10 * 1024 * 1024
+
+ALLOWED_FILE_EXTS = {
+    "txt", "csv", "json", "md", "log", "eml",
+    "pdf", "docx",
+    "png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff",
+}
+
+BLOCKED_FILE_EXTS = {
+    "exe", "bat", "cmd", "com", "msi", "scr", "pif", "dll", "sys",
+    "jar", "ps1", "vbs", "vbe", "js", "jse", "wsf", "wsh",
+    "html", "htm", "svg", "php", "asp", "aspx", "jsp",
+    "docm", "xlsm", "pptm", "lnk", "iso", "apk",
+}
+
+
+def safe_filename(filename: str) -> str:
+    name = str(filename or "").replace("\\", "/").split("/")[-1].strip()
+    name = re.sub(r"[^A-Za-z0-9._()\- áéíóúÁÉÍÓÚñÑ]", "_", name)
+    return name[:120]
+
+
+def get_file_ext(filename: str) -> str:
+    name = safe_filename(filename).lower()
+    if "." not in name:
+        return ""
+    return name.rsplit(".", 1)[-1]
+
+
+def estimate_payload_size_bytes(content: str) -> int:
+    raw = str(content or "").strip()
+
+    if raw.lower().startswith("data:") and "," in raw:
+        raw = raw.split(",", 1)[1]
+
+    compact = re.sub(r"\s+", "", raw)
+
+    # Si parece base64, estimamos tamaño decodificado.
+    if compact and re.fullmatch(r"[A-Za-z0-9+/=_-]+", compact):
+        return int(len(compact) * 3 / 4)
+
+    return len(raw.encode("utf-8", errors="ignore"))
+
+
+def validate_file_input_or_raise(content: str, filename: str) -> str:
+    clean_name = safe_filename(filename)
+    ext = get_file_ext(clean_name)
+
+    if not clean_name or not ext:
+        raise HTTPException(
+            status_code=400,
+            detail="Archivo no permitido"
+        )
+
+    if ext in BLOCKED_FILE_EXTS or ext not in ALLOWED_FILE_EXTS:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipo de archivo no permitido por seguridad"
+        )
+
+    if not isinstance(content, str) or not content.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Archivo vacío o inválido"
+        )
+
+    if estimate_payload_size_bytes(content) > MAX_FILE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail="Archivo demasiado grande"
+        )
+
+    return clean_name
 
 
 def _is_blocked_ip(ip_obj: ipaddress._BaseAddress) -> bool:
@@ -122,6 +198,13 @@ async def analyze(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Validación general del tipo de entrada
+    if data.input_type not in {"msg", "url", "file"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipo de entrada inválido"
+        )
+
     # Validación de seguridad para URLs antes de consumir cuota o ejecutar el agente
     if data.input_type == "url":
         if not is_safe_public_url(data.content):
@@ -129,6 +212,11 @@ async def analyze(
                 status_code=400,
                 detail="URL inválida o no permitida"
             )
+
+    # Validación de seguridad para archivos antes de consumir cuota o ejecutar el agente
+    safe_file_name = ""
+    if data.input_type == "file":
+        safe_file_name = validate_file_input_or_raise(data.content, data.filename)
 
     # Control de uso diario por usuario
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -155,7 +243,7 @@ async def analyze(
     # Extraer texto si es archivo
     content_to_analyze = data.content
     if data.input_type == "file":
-        filename = data.filename if hasattr(data, "filename") else ""
+        filename = safe_file_name or safe_filename(data.filename if hasattr(data, "filename") else "")
         content_to_analyze = extract_text_from_file(data.content, filename)
 
     # Ejecutar el agente LangGraph
@@ -164,8 +252,9 @@ async def analyze(
     # Preparar datos para guardar
     # Generar preview limpio según tipo
     if data.input_type == "file":
-        ext = data.filename.split(".")[-1].upper() if "." in data.filename else "Archivo"
-        content_preview = f"Archivo {ext}: {data.filename[:50]}" if data.filename else "Archivo adjunto"
+        filename = safe_file_name or safe_filename(data.filename)
+        ext = filename.split(".")[-1].upper() if "." in filename else "Archivo"
+        content_preview = f"Archivo {ext}: {filename[:50]}" if filename else "Archivo adjunto"
     elif data.input_type == "url":
         content_preview = data.content[:80]
     else:

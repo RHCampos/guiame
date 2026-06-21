@@ -1020,7 +1020,7 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
 
             <div id="it-file" class="hidden">
               <div class="upload-zone" onclick="document.getElementById('file-in').click()">
-                <input type="file" id="file-in" style="display:none" onchange="onFile(this)" />
+                <input type="file" id="file-in" style="display:none" onchange="onFile(this)" accept=".txt,.csv,.json,.md,.log,.eml,.pdf,.docx,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff,text/plain,text/csv,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/webp,image/bmp,image/tiff,message/rfc822" />
                 <div class="upload-icon-big">📂</div>
                 <h3>Tocá para subir el archivo</h3>
                 <p id="file-lbl">PDF, Word, ZIP, imágenes — Máx 10 MB</p>
@@ -1525,6 +1525,71 @@ function setInputTab(type, btn){
 let fileContent = '';
 let fileName = '';
 
+
+const GUIAME_ALLOWED_FILE_EXTS = new Set([
+  'txt','csv','json','md','log','eml',
+  'pdf','docx',
+  'png','jpg','jpeg','webp','bmp','tif','tiff'
+]);
+
+const GUIAME_BLOCKED_FILE_EXTS = new Set([
+  'exe','bat','cmd','com','msi','scr','pif','dll','sys',
+  'jar','ps1','vbs','vbe','js','jse','wsf','wsh',
+  'html','htm','svg','php','asp','aspx','jsp',
+  'docm','xlsm','pptm','lnk','iso','apk'
+]);
+
+const GUIAME_ALLOWED_MIMES = new Set([
+  'text/plain',
+  'text/csv',
+  'application/json',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/bmp',
+  'image/tiff',
+  'message/rfc822'
+]);
+
+function getFileExt(name){
+  const clean = String(name || '').toLowerCase().trim();
+  if(!clean || !clean.includes('.')) return '';
+  return clean.split('.').pop();
+}
+
+function validateSelectedFile(file){
+  if(!file){
+    return {ok:false, message:'No se seleccionó ningún archivo.'};
+  }
+
+  const maxBytes = 10 * 1024 * 1024;
+  const name = String(file.name || '').trim();
+  const ext = getFileExt(name);
+  const mime = String(file.type || '').toLowerCase().trim();
+
+  if(!name || !ext){
+    return {ok:false, message:'Archivo no permitido. El archivo debe tener una extensión válida.'};
+  }
+
+  if(file.size > maxBytes){
+    return {ok:false, message:'El archivo es demasiado grande. Máximo permitido: 10 MB.'};
+  }
+
+  if(GUIAME_BLOCKED_FILE_EXTS.has(ext) || !GUIAME_ALLOWED_FILE_EXTS.has(ext)){
+    return {ok:false, message:'Tipo de archivo no permitido por seguridad. GUIAME puede analizar texto, PDF, DOCX e imágenes, pero no ejecutables.'};
+  }
+
+  // Algunos navegadores no informan MIME para .eml, .md o .log.
+  // Si viene vacío, validamos por extensión y el backend vuelve a controlar.
+  if(mime && !GUIAME_ALLOWED_MIMES.has(mime)){
+    return {ok:false, message:'Tipo MIME no permitido. Seleccioná un archivo compatible.'};
+  }
+
+  return {ok:true, message:'OK'};
+}
+
 function onFile(inp){
   const file = inp.files && inp.files[0];
 
@@ -1541,6 +1606,17 @@ function onFile(inp){
     fileContent = '';
     fileName = '';
     document.getElementById('file-lbl').textContent = 'Tocá para subir o arrastrá el archivo';
+    return;
+  }
+
+  const fileValidation = validateSelectedFile(file);
+  if(!fileValidation.ok){
+    alert(fileValidation.message);
+    inp.value = '';
+    fileContent = '';
+    fileName = '';
+    const lbl = document.getElementById('file-lbl');
+    if(lbl) lbl.textContent = 'Arrastrá o seleccioná un archivo compatible';
     return;
   }
 

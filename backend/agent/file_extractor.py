@@ -4,7 +4,7 @@ import base64
 
 
 IMAGE_EXTS = {"png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff"}
-TEXT_EXTS = {"txt", "eml", "html", "htm", "csv", "json", "md", "log"}
+TEXT_EXTS = {"txt", "eml", "csv", "json", "md", "log"}
 
 
 def _get_ext(filename: str) -> str:
@@ -55,7 +55,7 @@ def _extract_pdf(content: str, filename: str) -> str:
         return f"[Archivo PDF: {filename}]\n\nTexto extraído:\n{text[:3000]}"
 
     except Exception as e:
-        return f"[Error al leer PDF: {filename}. Detalle: {str(e)}]"
+        return f"[No se pudo leer el PDF de forma segura: {filename}]"
 
 
 def _extract_docx(content: str, filename: str) -> str:
@@ -73,7 +73,7 @@ def _extract_docx(content: str, filename: str) -> str:
         return f"[Archivo Word DOCX: {filename}]\n\nTexto extraído:\n{text[:3000]}"
 
     except Exception as e:
-        return f"[Error al leer DOCX: {filename}. Detalle: {str(e)}]"
+        return f"[No se pudo leer el DOCX de forma segura: {filename}]"
 
 
 def _extract_image_ocr(content: str, filename: str) -> str:
@@ -119,7 +119,7 @@ def _extract_image_ocr(content: str, filename: str) -> str:
         return f"[Imagen/Captura analizada por OCR: {filename}]\n\nTexto extraído:\n{text[:3000]}"
 
     except Exception as e:
-        return f"[Error al aplicar OCR sobre imagen: {filename}. Detalle: {str(e)}]"
+        return f"[No se pudo aplicar OCR de forma segura sobre la imagen: {filename}]"
 
 
 def extract_text_from_file(content: str, filename: str = "") -> str:
@@ -142,8 +142,8 @@ def extract_text_from_file(content: str, filename: str = "") -> str:
     if ext in TEXT_EXTS:
         return content[:3000]
 
-    # Fallback seguro: no ejecutar, solo analizar como texto truncado
-    return content[:3000]
+    # Fallback defensivo: si llegó una extensión no soportada, no se procesa.
+    return f"[Archivo no permitido para análisis: {filename}]"
 
 
 def is_base64(s: str) -> bool:
