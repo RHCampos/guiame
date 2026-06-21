@@ -1,5 +1,8 @@
 import json
 import hashlib
+import ipaddress
+import socket
+from urllib.parse import urlparse
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -20,6 +23,76 @@ router = APIRouter(tags=["analysis"])
 bearer = HTTPBearer()
 
 DAILY_ANALYSIS_LIMIT = 10
+
+
+def _is_blocked_ip(ip_obj: ipaddress._BaseAddress) -> bool:
+    return (
+        ip_obj.is_private
+        or ip_obj.is_loopback
+        or ip_obj.is_link_local
+        or ip_obj.is_reserved
+        or ip_obj.is_multicast
+        or ip_obj.is_unspecified
+    )
+
+
+def is_safe_public_url(raw_url: str) -> bool:
+    """
+    Valida URLs públicas para evitar esquemas peligrosos y destinos internos.
+    Bloquea javascript:, data:, file:, localhost, loopback, redes privadas y rangos no públicos.
+    """
+    if not raw_url:
+        return False
+
+    raw_url = raw_url.strip()
+
+    if len(raw_url) > 2048:
+        return False
+
+    parsed = urlparse(raw_url)
+
+    if parsed.scheme not in ("http", "https"):
+        return False
+
+    hostname = parsed.hostname
+
+    if not hostname:
+        return False
+
+    hostname = hostname.lower().strip("[]")
+
+    blocked_hosts = {
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+        "::1",
+    }
+
+    if hostname in blocked_hosts:
+        return False
+
+    # Si el host ya es una IP literal, validarla directamente
+    try:
+        ip_obj = ipaddress.ip_address(hostname)
+        if _is_blocked_ip(ip_obj):
+            return False
+    except ValueError:
+        pass
+
+    # Resolver DNS y bloquear si apunta a una red interna/no pública
+    try:
+        addr_infos = socket.getaddrinfo(hostname, None)
+
+        for info in addr_infos:
+            resolved_ip = info[4][0]
+            ip_obj = ipaddress.ip_address(resolved_ip)
+
+            if _is_blocked_ip(ip_obj):
+                return False
+    except Exception:
+        return False
+
+    return True
 
 
 async def get_current_user(
@@ -49,6 +122,14 @@ async def analyze(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Validación de seguridad para URLs antes de consumir cuota o ejecutar el agente
+    if data.input_type == "url":
+        if not is_safe_public_url(data.content):
+            raise HTTPException(
+                status_code=400,
+                detail="URL inválida o no permitida"
+            )
+
     # Control de uso diario por usuario
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
 
