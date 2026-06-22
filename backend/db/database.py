@@ -34,7 +34,7 @@ class User(Base):
     reset_token         = Column(String(64), nullable=True)
     reset_token_expires = Column(DateTime, nullable=True)
     created_at    = Column(DateTime, default=datetime.utcnow)
-
+    last_login    = Column(DateTime, nullable=True)
     analyses = relationship("Analysis", back_populates="user")
 
 

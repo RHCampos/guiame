@@ -206,6 +206,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
 
     user.failed_logins = 0
     user.locked_until = None
+    user.last_login = datetime.utcnow()
     await db.commit()
 
     token = create_token(user.id, user.email)
@@ -326,6 +327,7 @@ async def google_login(payload: GoogleLoginRequest, db: AsyncSession = Depends(g
             password_hash="",
             is_verified=True,
             is_active=True,
+            last_login=datetime.utcnow(),
         )
         db.add(user)
         await db.commit()
@@ -337,6 +339,7 @@ async def google_login(payload: GoogleLoginRequest, db: AsyncSession = Depends(g
             user.is_verified = True
         user.failed_logins = 0
         user.locked_until = None
+        user.last_login = datetime.utcnow()
         await db.commit()
 
     token = create_token(user.id, user.email)
@@ -411,7 +414,8 @@ async def google_login_code(payload: GoogleCodePayload, db: AsyncSession = Depen
             password_hash="",
             is_verified=True,
             is_active=True,
-        )
+	    last_login=datetime.utcnow(),
+	)
         db.add(user)
         await db.commit()
         await db.refresh(user)
@@ -422,6 +426,7 @@ async def google_login_code(payload: GoogleCodePayload, db: AsyncSession = Depen
             user.is_verified = True
         user.failed_logins = 0
         user.locked_until = None
+        user.last_login = datetime.utcnow()
         await db.commit()
 
     token = create_token(user.id, user.email)
