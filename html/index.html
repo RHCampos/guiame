@@ -180,7 +180,7 @@ html,body{height:100%;background:var(--black);color:var(--text);font-family:var(
 .section-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .section-title{font-family:var(--title);font-size:16px;font-weight:700;letter-spacing:0.5px}
 .see-all{font-size:12px;color:var(--orange3);background:none;border:none;cursor:pointer;font-family:var(--sans)}
-.hist-item{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);transition:background 0.15s;cursor:pointer}
+.hist-item{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default}
 .hist-item:last-child{border-bottom:none}
 .hist-item:hover{background:rgba(255,255,255,0.03)}
 .hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -934,8 +934,8 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
           </div>
           <span class="stat-trend trend-up">Bien</span>
         </div>
-        <div class="stat-val" style="color:var(--green)">100%</div>
-        <div class="stat-lbl">Tasa de seguridad</div>
+        <div class="stat-val" style="color:var(--green)">--</div>
+        <div class="stat-lbl">Consultas seguras</div>
       </div>
     </div>
 
@@ -945,12 +945,12 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
         <div class="recent-card">
           <div class="section-head">
             <div class="section-title">Mis últimas consultas</div>
-            <button class="see-all">Ver todo →</button>
+            <button class="see-all" onclick="toggleHistoryView(this)">Ver más →</button>
           </div>
           <div class="activity-list">
-            <div class="hist-item"><div class="hist-dot hd-danger"></div><div class="hist-text"><div class="hist-msg">"Tu cuenta fue bloqueada. Verificá en: banco-arg.xyz"</div><div class="hist-meta">hace 2 min · WhatsApp</div></div><span class="hist-badge hb-d">PELIGRO</span></div>
-            <div class="hist-item"><div class="hist-dot hd-warn"></div><div class="hist-text"><div class="hist-msg">http://oferta-especial-hoy.com/descuento99</div><div class="hist-meta">hace 1h · Enlace</div></div><span class="hist-badge hb-w">SOSPECHOSO</span></div>
-            <div class="hist-item"><div class="hist-dot hd-safe"></div><div class="hist-text"><div class="hist-msg">"Tu pedido #4821 fue enviado. Rastreá en correo.com"</div><div class="hist-meta">hace 3h · SMS</div></div><span class="hist-badge hb-s">SEGURO</span></div>
+            <div class="hist-empty" style="padding:18px 22px;color:#8da0c5;font-size:14px;">
+              Todavía no realizaste análisis. Cuando analices un mensaje, enlace o archivo sospechoso, tus consultas aparecerán aquí.
+            </div>
           </div>
         </div>
 
@@ -1027,11 +1027,11 @@ img.pulse-core-shield{width:58px;height:58px;object-fit:contain;display:block;fi
               </div>
             </div>
 
-            <div class="tip" role="note">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6.5v5.7c0 5-3.4 7.8-8 9.8-4.6-2-8-4.8-8-9.8V6.5L12 3Z" stroke="currentColor" stroke-width="1.6"/><path d="M9.6 12.5 11.2 14.1 14.7 10.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tip" role="alert" style="border:1px solid rgba(245,158,11,0.85);background:linear-gradient(135deg,rgba(245,158,11,0.16),rgba(249,115,22,0.08));box-shadow:0 0 0 1px rgba(245,158,11,0.15),0 10px 28px rgba(245,158,11,0.10);">
+              <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.16);display:flex;align-items:center;justify-content:center;color:#fbbf24;font-size:22px;flex-shrink:0;">⚠</div>
               <div>
-                <strong>Consejo de seguridad</strong>
-                <span>No compartas contraseñas, códigos de verificación ni datos bancarios.</span>
+                <strong style="color:#fbbf24;">Advertencia importante</strong>
+                <span>No ingreses contraseñas, códigos de verificación, datos bancarios ni información personal real.<br>Usá esta herramienta solo con fines de orientación preventiva.</span>
               </div>
             </div>
           </div>
@@ -1229,6 +1229,10 @@ function showPage(name){
     if(ic) ic.classList.remove("hidden");
     const mi=document.getElementById("msg-input");
     if(mi) mi.value="";
+  }
+
+  if(name==="dashboard" && authToken){
+    setTimeout(()=>loadDashboard(), 0);
   }
 }
 
@@ -1432,7 +1436,21 @@ function doLogout(){
   showPage('auth');
 }
 
-async function loadDashboard(){
+async function toggleHistoryView(btn){
+  const expanded = btn.dataset.expanded === 'true';
+
+  if(expanded){
+    await loadDashboard(5);
+    btn.dataset.expanded = 'false';
+    btn.textContent = 'Ver más →';
+  } else {
+    await loadDashboard(50);
+    btn.dataset.expanded = 'true';
+    btn.textContent = 'Ver menos ↑';
+  }
+}
+
+async function loadDashboard(limit=5){
   if(!authToken) return;
   // Actualizar nombre en hero
   if(currentUser){
@@ -1442,19 +1460,26 @@ async function loadDashboard(){
     if(nav) nav.textContent = currentUser.email;
   }
   try {
-    const res = await fetch(`${API}/history?limit=5`, {
+    const res = await fetch(`${API}/history?limit=${limit}`, {
       headers: {'Authorization': `Bearer ${authToken}`}
     });
     if(!res.ok) return;
     const history = await res.json();
     renderDashboardHistory(history);
+
+    const seeAllBtn = document.querySelector('.see-all');
+    if(seeAllBtn){
+      const expanded = Number(limit) > 5;
+      seeAllBtn.dataset.expanded = expanded ? 'true' : 'false';
+      seeAllBtn.textContent = expanded ? 'Ver menos ↑' : 'Ver más →';
+    }
     // Stats
     const total = history.length;
     const threats = history.filter(h=>h.level==='danger').length;
-    const safe = total > 0 ? Math.round((history.filter(h=>h.level==='safe').length/total)*100) : 100;
+    const safe = total > 0 ? Math.round((history.filter(h=>h.level==='safe').length/total)*100) : null;
     document.querySelectorAll('.stat-val')[0].textContent = total;
     document.querySelectorAll('.stat-val')[1].textContent = threats;
-    document.querySelectorAll('.stat-val')[2].textContent = safe+'%';
+    document.querySelectorAll('.stat-val')[2].textContent = safe === null ? '--' : safe+'%';
   } catch(e){ safeLog('DASHBOARD_LOAD_ERROR'); }
 }
 
