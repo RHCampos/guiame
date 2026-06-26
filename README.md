@@ -99,7 +99,7 @@ Extensiones bloqueadas:
 Los archivos bloqueados son rechazados antes de consumir cuota de análisis o ejecutar el flujo interno del agente.
 
 ## Estructura general del proyecto
-
+```text
 guiame/
 ├── backend/
 │   ├── agent/
@@ -113,7 +113,7 @@ guiame/
 │   └── avance-progresivo/
 ├── docker-compose.yml
 └── README.md
-
+```
 ## Ejecución en entorno controlado
 
 El prototipo fue desplegado en un VPS mediante contenedores Docker, con frontend web, backend, base de datos PostgreSQL y servidor Nginx.
@@ -131,7 +131,7 @@ Luego, la aplicación puede accederse desde el dominio o puerto configurado para
 Por seguridad, las claves reales, tokens y credenciales productivas no se incluyen en el repositorio. Para ejecutar el proyecto se debe crear un archivo de variables de entorno según la configuración requerida por el backend.
 
 Ejemplos de variables necesarias:
-
+```text
 DATABASE_URL=
 SECRET_KEY=
 ANTHROPIC_API_KEY=
@@ -140,7 +140,7 @@ RESEND_API_KEY=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 FRONTEND_URL=
-
+```
 ## Demo funcional
 
 La demo funcional del prototipo GUIAME se encuentra disponible en un entorno productivo controlado, desplegado en un VPS para su evaluación académica y validación técnica.
