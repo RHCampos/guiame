@@ -1,4 +1,3 @@
-cat > GUIAME_v1.5.11_admin_metrics_node.md <<'MD'
 # GUIAME v1.5.11 — admin_metrics_node
 
 **Fecha de implementación:** 18 de junio de 2026  
