@@ -1,5 +1,3 @@
----
-
 ## Actualización del prototipo — GuIAme v1.5.7 / v1.5.8
 
 Fecha: 14/06/2026  
