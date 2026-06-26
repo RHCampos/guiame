@@ -89,13 +89,13 @@ El prototipo incorpora medidas de seguridad orientadas a proteger el acceso, el 
 ## Archivos permitidos y bloqueados
 
 Extensiones permitidas:
-
+```text
 .txt, .csv, .json, .md, .log, .eml, .pdf, .docx, .png, .jpg, .jpeg, .webp, .bmp, .tif, .tiff
-
+```
 Extensiones bloqueadas:
-
+```text
 .exe, .bat, .cmd, .com, .msi, .scr, .pif, .dll, .sys, .jar, .ps1, .vbs, .vbe, .js, .jse, .wsf, .wsh, .html, .htm, .svg, .php, .asp, .aspx, .jsp, .docm, .xlsm, .pptm, .lnk, .iso, .apk
-
+```
 Los archivos bloqueados son rechazados antes de consumir cuota de análisis o ejecutar el flujo interno del agente.
 
 ## Estructura general del proyecto
