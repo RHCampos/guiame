@@ -63,7 +63,7 @@ GUIAME utiliza una lógica híbrida de análisis. En primer lugar, aplica reglas
 
 Luego, el sistema puede recuperar contexto mediante RAG y utilizar una capa de inteligencia artificial para generar una explicación comprensible y recomendaciones preventivas. El resultado final se presenta como una clasificación orientativa de riesgo bajo, medio o alto.
 
-Aclaración académica
+## Aclaración académica
 
 GUIAME fue desarrollado como prototipo académico de asistencia preventiva. Sus resultados tienen carácter orientativo y no constituyen un diagnóstico definitivo de ciberseguridad. El sistema busca ayudar al usuario a reconocer señales de alerta y tomar decisiones más prudentes, pero no reemplaza herramientas profesionales de seguridad ni la intervención de un especialista.
 
